@@ -1,0 +1,60 @@
+{
+  "balance": 13553.00,
+  "recipients": [
+    {
+      "name": "Recipient 1",
+      "imageUrl": "https://cdn.pixabay.com/photo/2022/09/12/17/39/man-7450033_1280.jpg",
+      "isOnline": true
+    },
+    {
+      "name": "Recipient 2",
+      "imageUrl": "https://cdn.pixabay.com/photo/2022/09/12/17/39/woman-7450034_1280.jpg",
+      "isOnline": true
+    },
+    {
+      "name": "Recipient 3",
+      "imageUrl": "https://cdn.pixabay.com/photo/2022/07/22/15/44/woman-7338402_1280.jpg",
+      "isOnline": false
+    },
+    {
+      "name": "Recipient 4",
+      "imageUrl": "https://cdn.pixabay.com/photo/2021/03/26/08/34/woman-6125219_1280.jpg",
+      "isOnline": false
+    },
+    {
+      "name": "Recipient 5",
+      "imageUrl": "https://cdn.pixabay.com/photo/2022/08/05/20/07/man-7367512_1280.jpg",
+      "isOnline": true
+    },
+    {
+      "name": "Recipient 6",
+      "imageUrl": "https://cdn.pixabay.com/photo/2022/08/05/20/07/man-7367512_1280.jpg",
+      "isOnline": false
+    },
+    {
+      "name": "Recipient 7",
+      "imageUrl": "https://cdn.pixabay.com/photo/2022/08/05/20/07/man-7367512_1280.jpg",
+      "isOnline": true
+    }
+  ],
+  "transactions": [
+    {
+      "type": "Food",
+      "description": "Payment",
+      "amount": -40.99,
+      "icon": "Restaurant"
+    },
+    {
+      "type": "Al-Bank",
+      "description": "Deposit",
+      "amount": 460.00,
+      "icon": "AccountBalance"
+    },
+    {
+      "type": "Shopping",
+      "description": "Online Purchase",
+      "amount": -120.50,
+      "icon": "ShoppingCart"
+    }
+  ]
+}

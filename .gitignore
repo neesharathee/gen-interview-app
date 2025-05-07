@@ -1,0 +1,15 @@
+build/
+.gradle/
+local.properties
+*.apk
+*.iml
+/app/build/outputs/apk/*
+.DS_Store
+*.swp
+*.swo
+/app/src/main/res/values/google_maps_api.xml
+.idea/caches/
+.idea/modules.xml
+.idea/workspace.xml
+/keystore.jks
+.idea/

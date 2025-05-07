@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Gen Interview Sample App</string>
+    <string name="home">Home</string>
+    <string name="stats">Stats</string>
+    <string name="add">Add</string>
+    <string name="profile">Profile</string>
+    <string name="settings">Settings</string>
+</resources>
