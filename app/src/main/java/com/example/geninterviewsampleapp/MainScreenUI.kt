@@ -62,6 +62,7 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -217,13 +218,15 @@ fun BalanceSection(balance: Double) {
 
 @Composable
 fun GraphSection() {
-    val dataPoints = listOf(0f, 100f, 300f, 250f, 409f, 300f, 150f)
+    val dataPoints = listOf(100f, 300f, 250f, 409f, 300f, 150f)
     val yAxisSteps = listOf(0f, 100f, 200f, 300f, 400f, 500f)
     val xAxisLabels = mapOf(
         1 to "1D", 2 to "5D", 3 to "1M", 4 to "3M", 5 to "6M", 6 to "1Y"
     )
-    val defaultSelectedIndex = dataPoints.indexOf(409f)
-    val selectedPointIndex = remember { mutableIntStateOf(defaultSelectedIndex) }
+    val defaultIndex = dataPoints.indexOf(409f)
+    val selectedPointIndex = remember { mutableIntStateOf(defaultIndex) }
+    val scrubberPosition = remember { mutableStateOf<Offset?>(null) }
+    var spacing by remember { mutableStateOf(0f) }
 
     Box(
         modifier = Modifier
@@ -231,8 +234,7 @@ fun GraphSection() {
             .height(240.dp)
             .clip(RoundedCornerShape(20.dp))
             .background(Color(0xFF2C2C2C))
-    )
-    {
+    ) {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -244,9 +246,27 @@ fun GraphSection() {
                 Canvas(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 40.dp)
+                        .padding(start = 32.dp, end = 16.dp, top = 24.dp, bottom = 24.dp)
+                        .pointerInput(Unit) {
+                            awaitPointerEventScope {
+                                while (true) {
+                                    val event = awaitPointerEvent()
+                                    event.changes.forEach { pointerInputChange ->
+                                        if (pointerInputChange.pressed) {
+                                            val position = pointerInputChange.position
+                                            scrubberPosition.value = Offset(position.x, 0f)
+                                            val index =
+                                                ((position.x - spacing / 2) / spacing).toInt()
+                                                    .coerceIn(0, dataPoints.size - 1)
+                                            selectedPointIndex.value = index
+                                            pointerInputChange.consume()
+                                        }
+                                    }
+                                }
+                            }
+                        }
                 ) {
-                    val spacing = size.width / (dataPoints.size - 1)
+                    spacing = size.width / (dataPoints.size - 1)
                     val chartHeight = size.height
                     val maxY = 500f
 
@@ -255,18 +275,21 @@ fun GraphSection() {
                         val y = chartHeight - (step / maxY) * chartHeight
                         drawContext.canvas.nativeCanvas.drawText(
                             step.toInt().toString(),
-                            -28f,
+                            -40f,
                             y + 10f,
                             Paint().apply {
                                 color = android.graphics.Color.LTGRAY
-                                textSize = 26f
+                                textSize = 32f
                             }
                         )
                     }
 
                     // Data points
                     val points = dataPoints.mapIndexed { i, yVal ->
-                        Offset(x = i * spacing, y = chartHeight - (yVal / maxY) * chartHeight)
+                        Offset(
+                            x = i * spacing + spacing / 2,
+                            y = chartHeight - (yVal / maxY) * chartHeight
+                        )
                     }
 
                     // Smooth curved line
@@ -293,23 +316,21 @@ fun GraphSection() {
                         style = Stroke(
                             width = 8f,
                             cap = StrokeCap.Round
-                        ) // Increased line thickness to 6f
+                        )
                     )
 
                     // Highlight selected point
                     if (selectedPointIndex.intValue != -1) {
                         val selectedPoint = points[selectedPointIndex.intValue]
-                        // Draw outer red border
                         drawCircle(
                             color = Red,
-                            radius = 12f, // Slightly bigger size
+                            radius = 12f,
                             center = selectedPoint,
-                            style = Stroke(width = 4f) // Red border
+                            style = Stroke(width = 4f)
                         )
-                        // Draw inner white circle
                         drawCircle(
                             color = Color.White,
-                            radius = 8f, // Inner white circle
+                            radius = 8f,
                             center = selectedPoint
                         )
                         drawContext.canvas.nativeCanvas.drawText(
@@ -324,17 +345,40 @@ fun GraphSection() {
                         )
                     }
 
-                    // X-axis labels aligned with points
-                    xAxisLabels.forEach { (index, label) ->
-                        val x = index * spacing
-                        drawContext.canvas.nativeCanvas.drawText(
-                            label,
-                            x,
-                            chartHeight + 24f,
-                            Paint().apply {
-                                color = android.graphics.Color.LTGRAY
-                                textSize = 26f
-                                textAlign = Paint.Align.CENTER
+                    // Draw scrubber line
+                    scrubberPosition.value?.let { position ->
+                        drawLine(
+                            color = Color.Gray,
+                            start = Offset(position.x, 0f),
+                            end = Offset(position.x, chartHeight),
+                            strokeWidth = 2f
+                        )
+                    }
+                }
+            }
+
+            // X-axis labels with correct offset
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                xAxisLabels.forEach { (index, label) ->
+                    Box(
+                        modifier = Modifier.weight(1f), // Distribute labels evenly
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = label,
+                            fontSize = 12.sp,
+                            color = if (selectedPointIndex.intValue == index - 1) Color.Red else Color.White,
+                            modifier = Modifier.clickable {
+                                selectedPointIndex.intValue = index - 1
+                                scrubberPosition.value = Offset(
+                                    x = (index - 1) * spacing + spacing / 2,
+                                    y = 0f
+                                )
                             }
                         )
                     }
