@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -46,6 +47,7 @@ android {
 }
 
 dependencies {
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -65,10 +67,16 @@ dependencies {
     implementation(libs.androidx.compose.testing)
     testImplementation(libs.junit)
 
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    // Align versions of androidx.test.ext:junit and androidx.test.espresso:espresso-core
+    androidTestImplementation ("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.0")
+
+    // Ensure Compose testing dependencies are compatible
+    androidTestImplementation ("androidx.compose.ui:ui-test-junit4:1.5.0")
+    debugImplementation ("androidx.compose.ui:ui-tooling:1.5.0")
+    debugImplementation ("androidx.compose.ui:ui-test-manifest:1.5.0")
+    // Robolectric for unit tests
+    testImplementation ("org.robolectric:robolectric:4.10.3")
+
+    testImplementation ("androidx.test:core:1.5.0")
 }
