@@ -26,6 +26,8 @@ A modern, modular Android Dashboard built with **Jetpack Compose** and **Kotlin*
 
 - ✨ **Floating Action Button & Notifications**
   - Currently show **toast messages** on tap for interaction demo.
+ 
+  - Added unit tests for all the sections
 
 ---
 
