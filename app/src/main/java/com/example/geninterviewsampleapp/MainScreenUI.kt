@@ -35,9 +35,11 @@ import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -72,6 +74,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
 import coil.compose.rememberAsyncImagePainter
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -83,8 +86,7 @@ import java.util.Locale
 data class Recipient(
     val name: String,
     val imageUrl: String,
-    val isOnline: Boolean
-)
+    val isOnline: Boolean)
 
 @Serializable
 data class Transaction(
@@ -388,8 +390,10 @@ fun GraphSection() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RecipientsSection(recipients: List<Recipient>, context: Context) {
+    val showBottomSheet = remember { mutableStateOf(false) }
     Column {
         Text(text = "Recipients", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
@@ -408,8 +412,39 @@ fun RecipientsSection(recipients: List<Recipient>, context: Context) {
                     RecipientItemWithCount(
                         recipient = recipient,
                         remainingCount = remainingCount,
-                        context = context
+                        context = context,
+                        onClick = { showBottomSheet.value = true }
                     )
+                }
+            }
+        }
+    }
+
+    if (showBottomSheet.value) {
+        ModalBottomSheet(
+            onDismissRequest = { showBottomSheet.value = false }
+        ) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                items(recipients) { recipient ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RecipientItem(recipient = recipient, context = context)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = recipient.name,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Black
+                        )
+                    }
                 }
             }
         }
@@ -418,12 +453,11 @@ fun RecipientsSection(recipients: List<Recipient>, context: Context) {
 
 @Composable
 fun RecipientItem(recipient: Recipient, context: Context) {
-    val imagePainter: Painter =
-        if (recipient.imageUrl.isNotEmpty() && isInternetAvailable(context)) {
-            rememberAsyncImagePainter(model = recipient.imageUrl)
-        } else {
-            painterResource(id = R.drawable.ic_launcher_background) // Fallback for missing images
-        }
+    val imagePainter: Painter = if (recipient.imageUrl.isNotEmpty() && isInternetAvailable(context)) {
+        rememberAsyncImagePainter(model = recipient.imageUrl)
+    } else {
+        painterResource(id = R.drawable.ic_launcher_background) // Fallback for missing images
+    }
 
     Box {
         Image(
@@ -455,33 +489,25 @@ fun RecipientItem(recipient: Recipient, context: Context) {
 }
 
 fun isInternetAvailable(context: Context): Boolean {
-    val connectivityManager =
-        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val network = connectivityManager.activeNetwork
     val capabilities = connectivityManager.getNetworkCapabilities(network)
     return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
 }
 
 @Composable
-fun RecipientItemWithCount(recipient: Recipient, remainingCount: Int, context: Context) {
-    val imagePainter: Painter =
-        if (recipient.imageUrl.isNotEmpty() && isInternetAvailable(context)) {
-            rememberAsyncImagePainter(model = recipient.imageUrl)
-        } else {
-            painterResource(id = R.drawable.ic_launcher_background) // Fallback
-        }
+fun RecipientItemWithCount(recipient: Recipient, remainingCount: Int, context: Context, onClick: () -> Unit) {
+    val imagePainter: Painter = if (recipient.imageUrl.isNotEmpty() && isInternetAvailable(context)) {
+        rememberAsyncImagePainter(model = recipient.imageUrl)
+    } else {
+        painterResource(id = R.drawable.ic_launcher_background) // Fallback
+    }
 
     Box(
         modifier = Modifier
             .size(60.dp)
             .clip(CircleShape)
-            .clickable {
-                Toast.makeText(
-                    context,
-                    "Displaying $remainingCount+ recipients",
-                    Toast.LENGTH_SHORT
-                ).show()
-            },
+            .clickable { onClick() },
         contentAlignment = Alignment.Center
     ) {
         Image(
