@@ -2,6 +2,8 @@ package com.example.geninterviewsampleapp
 
 import android.content.Context
 import android.graphics.Paint
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.widget.Toast
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -80,7 +82,8 @@ import java.util.Locale
 data class Recipient(
     val name: String,
     val imageUrl: String,
-    val isOnline: Boolean)
+    val isOnline: Boolean
+)
 
 @Serializable
 data class Transaction(
@@ -355,7 +358,7 @@ fun RecipientsSection(recipients: List<Recipient>, context: Context) {
             val displayedRecipients = recipients.take(5)
             items(displayedRecipients) { recipient ->
                 if (displayedRecipients.indexOf(recipient) < 4) {
-                    RecipientItem(recipient = recipient)
+                    RecipientItem(recipient = recipient, context = context)
                 } else {
                     val remainingCount = recipients.size - 4
                     RecipientItemWithCount(
@@ -370,12 +373,13 @@ fun RecipientsSection(recipients: List<Recipient>, context: Context) {
 }
 
 @Composable
-fun RecipientItem(recipient: Recipient) {
-    val imagePainter: Painter = if (recipient.imageUrl.isNotEmpty()) {
-        rememberAsyncImagePainter(model = recipient.imageUrl)
-    } else {
-        painterResource(id = R.drawable.ic_launcher_background) // Fallback for missing images
-    }
+fun RecipientItem(recipient: Recipient, context: Context) {
+    val imagePainter: Painter =
+        if (recipient.imageUrl.isNotEmpty() && isInternetAvailable(context)) {
+            rememberAsyncImagePainter(model = recipient.imageUrl)
+        } else {
+            painterResource(id = R.drawable.ic_launcher_background) // Fallback for missing images
+        }
 
     Box {
         Image(
@@ -406,13 +410,22 @@ fun RecipientItem(recipient: Recipient) {
     }
 }
 
+fun isInternetAvailable(context: Context): Boolean {
+    val connectivityManager =
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val network = connectivityManager.activeNetwork
+    val capabilities = connectivityManager.getNetworkCapabilities(network)
+    return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+}
+
 @Composable
 fun RecipientItemWithCount(recipient: Recipient, remainingCount: Int, context: Context) {
-    val imagePainter: Painter = if (recipient.imageUrl.isNotEmpty()) {
-        rememberAsyncImagePainter(model = recipient.imageUrl)
-    } else {
-        painterResource(id = R.drawable.ic_launcher_background) // Fallback
-    }
+    val imagePainter: Painter =
+        if (recipient.imageUrl.isNotEmpty() && isInternetAvailable(context)) {
+            rememberAsyncImagePainter(model = recipient.imageUrl)
+        } else {
+            painterResource(id = R.drawable.ic_launcher_background) // Fallback
+        }
 
     Box(
         modifier = Modifier
