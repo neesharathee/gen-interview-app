@@ -434,6 +434,7 @@ fun RecipientsSection(recipients: List<Recipient>, context: Context) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
+                    .background(Color.White)
             ) {
                 items(recipients) { recipient ->
                     Row(
