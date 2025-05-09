@@ -1,3 +1,4 @@
+
 package com.example.geninterviewsampleapp
 
 import android.content.Context
@@ -15,11 +16,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -124,7 +128,8 @@ fun MainScreenUI() {
     val bankData = bankDataState.value
 
     if (bankData != null) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()
+            .padding(WindowInsets.systemBars.asPaddingValues())) {
             Box(modifier = Modifier.weight(1f)) {
                 when (selectedNavItem) {
                     "home" -> HomeScreen(bankData, context)
@@ -157,7 +162,8 @@ fun MainScreenUI() {
         }
     } else {
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize()
+                .padding(WindowInsets.systemBars.asPaddingValues()),
             contentAlignment = Alignment.Center
         ) {
             Text("Loading...")
